@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>분말제조 실험 캘린더</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:   #1E3A5F;
+    --steel:  #2E75B6;
+    --teal:   #028090;
+    --mint:   #E2EFDA;
+    --amber:  #FFF2CC;
+    --coral:  #FCE4D6;
+    --white:  #FFFFFF;
+    --gray0:  #F7F8FA;
+    --gray1:  #EEF0F4;
+    --gray2:  #D0D5DD;
+    --gray3:  #8A94A6;
+    --gray4:  #4B5563;
+    --black:  #1A2030;
+
+    --cat1: #4A154B; /* 기획 */
+    --cat2: #028090; /* 실험 */
+    --cat3: #2E75B6; /* 분석 */
+    --cat4: #D85A30; /* 보고 */
+    --cat5: #375623; /* 완료 */
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--gray0);
+    color: var(--black);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── 앱 셸 ── */
+  .app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* ── 상단 헤더 ── */
+  .topbar {
+    background: var(--navy);
+    color: #fff;
+    padding: 0 24px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(30,58,95,0.25);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .logo { font-family: 'Noto Serif KR', serif; font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .logo span { color: #BDD7EE; }
+  .topbar-nav { display: flex; gap: 4px; }
+  .nav-btn {
+    background: rgba(255,255,255,0.1);
+    border: none; color: #fff;
+    padding: 5px 14px; border-radius: 20px;
+    font-size: 12px; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: background .15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.2); }
+  .nav-btn.active { background: rgba(255,255,255,0.25); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; font-size: 12px; color: rgba(255,255,255,0.7); }
+  .save-btn {
+    background: #BDD7EE; color: var(--navy);
+    border: none; padding: 5px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all .15s;
+  }
+  .save-btn:hover { background: #fff; }
+
+  /* ── 서브 헤더 ── */
+  .subbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray1);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .month-nav { display: flex; align-items: center; gap: 12px; }
+  .month-arrow {
+    background: var(--gray1); border: none;
+    width: 32px; height: 32px; border-radius: 50%;
+    cursor: pointer; font-size: 14px; color: var(--gray4);
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .month-arrow:hover { background: var(--gray2); }
+  .month-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 20px; font-weight: 700;
+    color: var(--navy); min-width: 140px; text-align: center;
+  }
+  .today-btn {
+    background: var(--navy); color: #fff;
+    border: none; padding: 5px 14px; border-radius: 20px;
+    font-size: 12px; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: background .15s;
+  }
+  .today-btn:hover { background: var(--steel); }
+
+  /* 범례 */
+  .legend { display: flex; gap: 10px; align-items: center; }
+  .leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--gray4); cursor: pointer; padding: 3px 8px; border-radius: 12px; border: 1px solid transparent; transition: all .15s; }
+  .leg:hover { border-color: var(--gray2); background: var(--gray0); }
+  .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── 캘린더 바디 ── */
+  .cal-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* 요일 헤더 */
+  .dow-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--white);
+    border-bottom: 1px solid var(--gray1);
+    flex-shrink: 0;
+  }
+  .dow-cell {
+    padding: 8px 0;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gray3);
+    letter-spacing: 0.5px;
+  }
+  .dow-cell.sun { color: #C0392B; }
+  .dow-cell.sat { color: #2980B9; }
+
+  /* 날짜 그리드 */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    flex: 1;
+    border-left: 1px solid var(--gray1);
+    border-top: 1px solid var(--gray1);
+    overflow: hidden;
+  }
+
+  .day-cell {
+    border-right: 1px solid var(--gray1);
+    border-bottom: 1px solid var(--gray1);
+    background: var(--white);
+    padding: 6px 8px 4px;
+    cursor: pointer;
+    transition: background .12s;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .day-cell:hover { background: #F0F4FF; }
+  .day-cell.other-month { background: var(--gray0); }
+  .day-cell.other-month .date-num { color: var(--gray2); }
+  .day-cell.is-today { background: #EEF5FF; }
+  .day-cell.selected { background: #E8F0FF; outline: 2px inset var(--steel); }
+
+  .date-num {
+    font-size: 13px; font-weight: 500;
+    color: var(--gray4);
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: all .12s;
+    margin-bottom: 3px;
+  }
+  .is-today .date-num {
+    background: var(--navy); color: #fff;
+  }
+  .day-cell.sun .date-num { color: #C0392B; }
+  .day-cell.sat .date-num { color: #2980B9; }
+  .is-today.sun .date-num,
+  .is-today.sat .date-num { background: var(--navy); color: #fff; }
+
+  /* 이벤트 필 */
+  .events-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 2px; }
+  .event-pill {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: opacity .12s;
+    line-height: 1.5;
+  }
+  .event-pill:hover { opacity: 0.82; }
+  .more-tag { font-size: 10px; color: var(--gray3); padding: 0 4px; }
+
+  /* ── 사이드 패널 (입력창) ── */
+  .panel-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(30,58,95,0.35);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .panel-overlay.open { display: flex; }
+
+  .side-panel {
+    background: var(--white);
+    width: 340px;
+    height: 100vh;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    animation: slideIn .2s ease;
+  }
+  @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  .panel-head {
+    background: var(--navy);
+    color: #fff;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .panel-date { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .panel-title { font-family: 'Noto Serif KR', serif; font-size: 18px; font-weight: 700; }
+
+  .panel-body { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  .field-label { font-size: 11px; font-weight: 500; color: var(--gray3); letter-spacing: 0.5px; margin-bottom: 5px; }
+  .field-input {
+    width: 100%; border: 1px solid var(--gray2);
+    border-radius: 8px; padding: 9px 12px;
+    font-size: 13px; font-family: 'Noto Sans KR', sans-serif;
+    color: var(--black); background: var(--white);
+    transition: border .15s;
+    resize: none;
+  }
+  .field-input:focus { outline: none; border-color: var(--steel); box-shadow: 0 0 0 3px rgba(46,117,182,0.1); }
+
+  /* 카테고리 선택 */
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .cat-opt {
+    border: 1.5px solid var(--gray2);
+    border-radius: 8px; padding: 8px 10px;
+    font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; gap: 7px;
+    transition: all .15s; background: var(--white);
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--gray4);
+  }
+  .cat-opt:hover { border-color: var(--gray3); }
+  .cat-opt.selected { color: #fff; border-color: transparent; }
+  .cat-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .panel-foot {
+    padding: 14px 20px;
+    border-top: 1px solid var(--gray1);
+    display: flex; gap: 8px;
+  }
+  .btn-cancel {
+    flex: 1; padding: 10px; border: 1px solid var(--gray2);
+    border-radius: 8px; background: var(--white); color: var(--gray4);
+    font-size: 13px; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: background .12s;
+  }
+  .btn-cancel:hover { background: var(--gray0); }
+  .btn-delete {
+    padding: 10px 14px; border: 1px solid #FCE4D6;
+    border-radius: 8px; background: var(--white); color: #D85A30;
+    font-size: 13px; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: background .12s;
+  }
+  .btn-delete:hover { background: #FCE4D6; }
+  .btn-save {
+    flex: 2; padding: 10px; border: none;
+    border-radius: 8px; background: var(--navy); color: #fff;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: background .12s;
+  }
+  .btn-save:hover { background: var(--steel); }
+
+  /* 빈 날짜 힌트 */
+  .add-hint {
+    position: absolute; bottom: 4px; right: 6px;
+    font-size: 18px; color: var(--gray2); opacity: 0;
+    transition: opacity .15s; pointer-events: none;
+  }
+  .day-cell:hover .add-hint { opacity: 1; }
+
+  /* 이미 이벤트 있으면 힌트 숨김 */
+  .has-event .add-hint { display: none; }
+
+  /* 상태바 */
+  .statusbar {
+    background: var(--gray0);
+    border-top: 1px solid var(--gray1);
+    padding: 5px 24px;
+    font-size: 11px;
+    color: var(--gray3);
+    display: flex; gap: 16px;
+    flex-shrink: 0;
+  }
+  .statusbar span b { color: var(--navy); font-weight: 500; }
+
+  /* 스크롤바 */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray2); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- 상단 헤더 -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo">🔬 분말<span>제조</span> 실험 캘린더</div>
+    </div>
+    <div class="topbar-right">
+      <span id="totalCount">일정 <b>0</b>개</span>
+      <button class="save-btn" onclick="exportData()">💾 데이터 내보내기</button>
+    </div>
+  </div>
+
+  <!-- 서브 헤더 -->
+  <div class="subbar">
+    <div class="month-nav">
+      <button class="month-arrow" onclick="changeMonth(-1)">&#9664;</button>
+      <div class="month-title" id="monthTitle"></div>
+      <button class="month-arrow" onclick="changeMonth(1)">&#9654;</button>
+      <button class="today-btn" onclick="goToday()">오늘</button>
+    </div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <!-- 캘린더 바디 -->
+  <div class="cal-body">
+    <div class="dow-row" id="dowRow"></div>
+    <div class="grid" id="calGrid"></div>
+  </div>
+
+  <!-- 상태바 -->
+  <div class="statusbar">
+    <span>💡 날짜 칸을 클릭하면 일정을 추가할 수 있어요</span>
+    <span id="selInfo"></span>
+  </div>
+</div>
+
+<!-- 사이드 패널 -->
+<div class="panel-overlay" id="panelOverlay" onclick="handleOverlayClick(event)">
+  <div class="side-panel" id="sidePanel">
+    <div class="panel-head">
+      <div class="panel-date" id="pDate"></div>
+      <div class="panel-title" id="pTitle">일정 추가</div>
+    </div>
+    <div class="panel-body">
+
+      <div>
+        <div class="field-label">실험 / 일정 제목</div>
+        <input class="field-input" id="fTitle" type="text" placeholder="예) 1차 소성 실험 (800℃, 2h)">
+      </div>
+
+      <div>
+        <div class="field-label">상세 내용</div>
+        <textarea class="field-input" id="fDesc" rows="4" placeholder="실험 조건, 재료, 담당자 등&#10;자유롭게 입력하세요"></textarea>
+      </div>
+
+      <div>
+        <div class="field-label">담당자</div>
+        <input class="field-input" id="fPerson" type="text" placeholder="김연구, 이실험, 박선임 ...">
+      </div>
+
+      <div>
+        <div class="field-label">분류</div>
+        <div class="cat-grid" id="catGrid"></div>
+      </div>
+
+    </div>
+    <div class="panel-foot">
+      <button class="btn-cancel" onclick="closePanel()">취소</button>
+      <button class="btn-delete" id="deleteBtn" onclick="deleteEvent()" style="display:none">삭제</button>
+      <button class="btn-save" onclick="saveEvent()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATS = [
+  { id:'plan',  label:'기획/설계', color:'#4A154B' },
+  { id:'exp',   label:'실험',      color:'#028090' },
+  { id:'anal',  label:'분석',      color:'#2E75B6' },
+  { id:'report',label:'보고',      color:'#D85A30' },
+  { id:'done',  label:'완료',      color:'#375623' },
+  { id:'etc',   label:'기타',      color:'#888780' },
+];
+const DAYS_KO = ['일','월','화','수','목','금','토'];
+const MONTHS_KO = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+// ── 데이터 (localStorage 기반) ──
+let events = {};
+let cur = new Date(); cur.setDate(1);
+let selectedKey = null;
+let selectedCat = 'exp';
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem('powder_cal_v1');
+    if (raw) events = JSON.parse(raw);
+  } catch(e) {}
+  // 샘플 데이터
+  if (Object.keys(events).length === 0) {
+    const seed = [
+      {d:'2025-5-5',  t:'실험 설계 회의', desc:'원료 선정 논의\n실험 변수 정의', p:'전체', cat:'plan'},
+      {d:'2025-5-12', t:'원료 샘플 수령', desc:'스펙 검토 및 보관', p:'이실험', cat:'plan'},
+      {d:'2025-5-26', t:'실험 계획서 승인', desc:'박선임 검토 후 최종 승인', p:'박선임', cat:'report'},
+      {d:'2025-6-2',  t:'1차 소성 실험 (800℃)', desc:'T=800℃, t=2h\n소성로 사용', p:'김연구', cat:'exp'},
+      {d:'2025-6-9',  t:'1차 소성 실험 (900℃)', desc:'T=900℃, t=2h', p:'김연구', cat:'exp'},
+      {d:'2025-6-23', t:'입도 분석 (D50)', desc:'입도분석기 사용\n목표: D50 ≤10μm', p:'이실험', cat:'anal'},
+      {d:'2025-7-7',  t:'2차 조건 최적화', desc:'압력 변수 추가\nT=900℃, P=50MPa', p:'박선임', cat:'exp'},
+      {d:'2025-7-14', t:'XRD 분석', desc:'결정 구조 분석', p:'이실험', cat:'anal'},
+      {d:'2025-8-4',  t:'3차 재현성 실험(1)', desc:'최적 조건 3회 반복 중 1회', p:'이실험', cat:'exp'},
+      {d:'2025-9-1',  t:'SEM 분석', desc:'분말 형태 관찰', p:'김연구', cat:'anal'},
+      {d:'2025-10-27',t:'최종 발표', desc:'결과 정리 및 보고서 제출', p:'전체', cat:'report'},
+    ];
+    seed.forEach(s => {
+      if (!events[s.d]) events[s.d] = [];
+      events[s.d].push({title:s.t, desc:s.desc, person:s.p, cat:s.cat, id:Date.now()+Math.random()});
+    });
+    saveData();
+  }
+}
+
+function saveData() {
+  try { localStorage.setItem('powder_cal_v1', JSON.stringify(events)); } catch(e) {}
+  updateStatus();
+}
+
+function updateStatus() {
+  let total = 0;
+  Object.values(events).forEach(arr => total += arr.length);
+  document.getElementById('totalCount').innerHTML = `일정 <b>${total}</b>개`;
+}
+
+// ── 렌더 ──
+function render() {
+  const y = cur.getFullYear(), m = cur.getMonth();
+  document.getElementById('monthTitle').textContent = `${y}년 ${MONTHS_KO[m]}`;
+
+  // 요일 헤더
+  const dow = document.getElementById('dowRow');
+  dow.innerHTML = '';
+  DAYS_KO.forEach((d, i) => {
+    const el = document.createElement('div');
+    el.className = 'dow-cell' + (i===0?' sun':i===6?' sat':'');
+    el.textContent = d;
+    dow.appendChild(el);
+  });
+
+  // 범례
+  const leg = document.getElementById('legend');
+  leg.innerHTML = '';
+  CATS.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'leg';
+    el.innerHTML = `<div class="leg-dot" style="background:${c.color}"></div>${c.label}`;
+    leg.appendChild(el);
+  });
+
+  // 그리드
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const today = new Date();
+  const firstDow = new Date(y, m, 1).getDay();
+  const lastDate = new Date(y, m+1, 0).getDate();
+
+  let totalCells = firstDow + lastDate;
+  while (totalCells % 7 !== 0) totalCells++;
+  const rows = Math.max(5, totalCells / 7);
+  grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+  for (let i = 0; i < rows * 7; i++) {
+    const dayOffset = i - firstDow + 1;
+    const date = new Date(y, m, dayOffset);
+    const dy = date.getFullYear(), dm = date.getMonth(), dd = date.getDate();
+    const key = `${dy}-${dm+1}-${dd}`;
+    const isOther = dm !== m;
+    const isToday = (dy===today.getFullYear()&&dm===today.getMonth()&&dd===today.getDate());
+    const isSun = (i % 7 === 0), isSat = (i % 7 === 6);
+    const dayEvts = events[key] || [];
+
+    const cell = document.createElement('div');
+    cell.className = 'day-cell' +
+      (isOther ? ' other-month' : '') +
+      (isToday  ? ' is-today' : '') +
+      (isSun    ? ' sun' : '') +
+      (isSat    ? ' sat' : '') +
+      (dayEvts.length > 0 ? ' has-event' : '');
+    cell.dataset.key = key;
+    cell.onclick = () => openPanel(key, dy, dm+1, dd);
+
+    const numDiv = document.createElement('div');
+    numDiv.className = 'date-num';
+    numDiv.textContent = dd;
+    cell.appendChild(numDiv);
+
+    const evWrap = document.createElement('div');
+    evWrap.className = 'events-wrap';
+    const maxShow = 3;
+    dayEvts.slice(0, maxShow).forEach(ev => {
+      const cat = CATS.find(c => c.id === ev.cat) || CATS[5];
+      const pill = document.createElement('div');
+      pill.className = 'event-pill';
+      pill.style.background = cat.color;
+      pill.textContent = ev.title;
+      pill.onclick = (e) => { e.stopPropagation(); openPanelEdit(key, ev.id); };
+      evWrap.appendChild(pill);
+    });
+    if (dayEvts.length > maxShow) {
+      const more = document.createElement('div');
+      more.className = 'more-tag';
+      more.textContent = `+${dayEvts.length - maxShow}개 더`;
+      evWrap.appendChild(more);
+    }
+    cell.appendChild(evWrap);
+
+    const hint = document.createElement('div');
+    hint.className = 'add-hint';
+    hint.textContent = '+';
+    cell.appendChild(hint);
+
+    grid.appendChild(cell);
+  }
+
+  updateStatus();
+}
+
+// ── 패널 ──
+let editingId = null;
+
+function buildCatGrid(selected) {
+  const cg = document.getElementById('catGrid');
+  cg.innerHTML = '';
+  CATS.forEach(c => {
+    const el = document.createElement('button');
+    el.className = 'cat-opt' + (c.id === selected ? ' selected' : '');
+    if (c.id === selected) el.style.background = c.color;
+    el.innerHTML = `<div class="cat-dot" style="background:${c.id===selected?'rgba(255,255,255,0.7)':c.color}"></div>${c.label}`;
+    el.onclick = () => { selectedCat = c.id; buildCatGrid(c.id); };
+    cg.appendChild(el);
+  });
+}
+
+function openPanel(key, y, m, d) {
+  selectedKey = key;
+  editingId = null;
+  selectedCat = 'exp';
+  document.getElementById('pDate').textContent = `${y}년 ${m}월 ${d}일 (${DAYS_KO[new Date(y,m-1,d).getDay()]}요일)`;
+  document.getElementById('pTitle').textContent = '일정 추가';
+  document.getElementById('fTitle').value = '';
+  document.getElementById('fDesc').value = '';
+  document.getElementById('fPerson').value = '';
+  document.getElementById('deleteBtn').style.display = 'none';
+  buildCatGrid('exp');
+  document.getElementById('panelOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('fTitle').focus(), 150);
+}
+
+function openPanelEdit(key, id) {
+  const ev = (events[key] || []).find(e => e.id === id);
+  if (!ev) return;
+  selectedKey = key;
+  editingId = id;
+  selectedCat = ev.cat || 'exp';
+  const parts = key.split('-');
+  const d = new Date(+parts[0], +parts[1]-1, +parts[2]);
+  document.getElementById('pDate').textContent = `${parts[0]}년 ${parts[1]}월 ${parts[2]}일 (${DAYS_KO[d.getDay()]}요일)`;
+  document.getElementById('pTitle').textContent = '일정 수정';
+  document.getElementById('fTitle').value = ev.title || '';
+  document.getElementById('fDesc').value = ev.desc || '';
+  document.getElementById('fPerson').value = ev.person || '';
+  document.getElementById('deleteBtn').style.display = 'block';
+  buildCatGrid(ev.cat || 'exp');
+  document.getElementById('panelOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('fTitle').focus(), 150);
+}
+
+function closePanel() {
+  document.getElementById('panelOverlay').classList.remove('open');
+  selectedKey = null; editingId = null;
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('panelOverlay')) closePanel();
+}
+
+function saveEvent() {
+  const title = document.getElementById('fTitle').value.trim();
+  if (!title) { document.getElementById('fTitle').focus(); document.getElementById('fTitle').style.borderColor='#D85A30'; return; }
+  document.getElementById('fTitle').style.borderColor = '';
+  const ev = {
+    title,
+    desc:   document.getElementById('fDesc').value.trim(),
+    person: document.getElementById('fPerson').value.trim(),
+    cat:    selectedCat,
+    id:     editingId || (Date.now() + Math.random()),
+  };
+  if (!events[selectedKey]) events[selectedKey] = [];
+  if (editingId) {
+    const idx = events[selectedKey].findIndex(e => e.id === editingId);
+    if (idx >= 0) events[selectedKey][idx] = ev;
+  } else {
+    events[selectedKey].push(ev);
+  }
+  saveData();
+  closePanel();
+  render();
+}
+
+function deleteEvent() {
+  if (!editingId || !selectedKey) return;
+  events[selectedKey] = (events[selectedKey] || []).filter(e => e.id !== editingId);
+  if (events[selectedKey].length === 0) delete events[selectedKey];
+  saveData();
+  closePanel();
+  render();
+}
+
+function changeMonth(dir) {
+  cur.setMonth(cur.getMonth() + dir);
+  render();
+}
+
+function goToday() {
+  cur = new Date(); cur.setDate(1);
+  render();
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(events, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '분말제조_실험_캘린더_데이터.json';
+  a.click();
+}
+
+// 키보드
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePanel();
+  if (e.key === 'Enter' && e.ctrlKey && document.getElementById('panelOverlay').classList.contains('open')) saveEvent();
+});
+
+// 초기화
+loadData();
+render();
+</script>
+</body>
+</html>
